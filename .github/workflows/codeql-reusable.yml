@@ -100,7 +100,9 @@ jobs:
         with:
           languages: ${{ inputs.language }}
           # Use the specified query suite
-          queries: ${{ inputs.query-suite }}
+          # I AM COMMENTING THIS OUT TO MAKE SURE IT ONLY USES MY PACK. THIS WILL BREAK OTHER THINGS THAT USE THIS PARAM
+          # ULTIMATELY I SHOULD UPDATE MY CODE TO HANDLE THE SCENARIO
+          # queries: ${{ inputs.query-suite }}
           # Add query packs if specified
           packs: ${{ inputs.query-packs }}
           # Set build mode based on input parameter

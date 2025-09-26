@@ -27,7 +27,7 @@ jobs:
       
       - name: 'Build application'
         run: |
-          mvn clean compile -DskipTests
+          mvn clean compile
           echo "✅ Application built successfully"
       
       - name: 'Run basic validation'
@@ -46,6 +46,11 @@ jobs:
             echo "❌ Vulnerable controller not found"
             exit 1
           fi
+      
+      - name: 'Run tests'
+        run: |
+          mvn test
+          echo "✅ Tests completed successfully"
       
       - name: 'Package application'
         run: |

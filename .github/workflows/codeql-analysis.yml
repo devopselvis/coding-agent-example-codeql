@@ -72,4 +72,6 @@ jobs:
       query-packs: ${{ github.event.inputs.custom-query-packs }}
       query-suite: ${{ github.event.inputs.query-suite }}
       java-version: '11'
+      # Enable debug logging for manual analysis to help with troubleshooting
+      debug-logging: true
     secrets: inherit

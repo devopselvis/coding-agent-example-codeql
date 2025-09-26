@@ -22,6 +22,9 @@ This demo addresses a common scenario where teams want to:
 │   ├── codeql-reusable.yml                 # Reusable CodeQL workflow
 │   ├── codeql-analysis.yml                 # Calling workflow with query pack examples
 │   └── ci.yml                              # Basic CI workflow
+├── examples/
+│   ├── custom-workflow.yml                 # Example organization-specific workflow
+│   └── query-pack-examples.md              # Query pack usage examples
 ├── pom.xml                                  # Maven build configuration
 └── README.md                               # This documentation
 ```
@@ -53,6 +56,7 @@ A flexible, reusable workflow that:
 - `language`: Programming language (default: java)
 - `java-version`: Java version for builds (default: 11)
 - `build-command`: Custom build command override
+- `debug-logging`: Enable verbose debug logging (default: false)
 
 ### Calling Workflow (`.github/workflows/codeql-analysis.yml`)
 
@@ -130,6 +134,13 @@ The application will start on `http://localhost:8080` with the following endpoin
 - `/api/files/{filename}` - Path traversal vulnerability
 - `/api/ping?host=<host>` - Command injection vulnerability
 
+## 📁 Example Files
+
+The `examples/` directory contains additional resources:
+
+- **`custom-workflow.yml`**: Example of how an organization might structure their CodeQL workflow with scheduled scans and different analysis levels
+- **`query-pack-examples.md`**: Comprehensive guide to using different query packs, including built-in and custom options
+
 ## 📚 Learning Resources
 
 ### CodeQL Documentation
@@ -160,7 +171,7 @@ The application will start on `http://localhost:8080` with the following endpoin
 
 ### Debugging Tips
 
-1. **Enable Debug Logging**: Set `CODEQL_ACTION_DEBUG: true` in the workflow
+1. **Enable Debug Logging**: Set `debug-logging: true` when calling the reusable workflow
 2. **Check Build Logs**: Review the "Build application" step for compilation errors
 3. **Verify Query Packs**: Ensure specified query packs are publicly available
 4. **Review Permissions**: Confirm the workflow has `security-events: write` permission

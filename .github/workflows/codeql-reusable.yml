@@ -41,6 +41,13 @@ on:
         required: false
         type: string
         default: '11'
+      
+      # Debug logging toggle
+      debug-logging:
+        description: 'Enable verbose debug logging for troubleshooting'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   codeql-analysis:
@@ -110,8 +117,8 @@ jobs:
           # Set analysis category for tracking
           category: 'java-security-analysis'
         env:
-          # Enable verbose logging for troubleshooting
-          CODEQL_ACTION_DEBUG: false
+          # Enable verbose logging for troubleshooting (configurable)
+          CODEQL_ACTION_DEBUG: ${{ inputs.debug-logging }}
 
       # Step 6: Upload analysis results as artifacts (optional)
       - name: 'Upload CodeQL results'

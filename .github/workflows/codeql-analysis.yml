@@ -58,8 +58,8 @@ jobs:
       #query-suite: 'security-extended'
       # Specify additional query packs for more comprehensive analysis
       # These packs focus on specific vulnerability types
-      query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089,codeql/java-queries:cwe-078'
-      query-suite: 'security-and-quality'
+      query-packs: 'codeql/java-queries@1.8.0'
+      #query-suite: 'security-and-quality'
       java-version: '11'
       # Use default build mode "none" - no explicit build needed
       build-mode: 'none'

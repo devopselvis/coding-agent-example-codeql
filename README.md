@@ -55,15 +55,52 @@ A flexible, reusable workflow that:
 - `query-suite`: CodeQL query suite to use
 - `language`: Programming language (default: java)
 - `java-version`: Java version for builds (default: 11)
-- `build-command`: Custom build command override
+- `build-mode`: CodeQL build mode - "none", "autobuild", or "manual" (default: "none")
+- `build-command`: Custom build command (only used when build-mode is "manual")
 - `debug-logging`: Enable verbose debug logging (default: false)
 
 ### Calling Workflow (`.github/workflows/codeql-analysis.yml`)
 
-Demonstrates three different analysis approaches:
-1. **Standard Analysis**: Basic security scanning with default queries
-2. **Enhanced Analysis**: Additional query packs for comprehensive scanning
-3. **Manual Analysis**: User-triggered analysis with custom parameters
+Demonstrates four different analysis approaches:
+1. **Standard Analysis**: Basic security scanning using build mode "none" (default)
+2. **Enhanced Analysis**: Additional query packs with autobuild mode
+3. **Manual Build Analysis**: Custom build command with manual build mode
+4. **Manual Analysis**: User-triggered analysis with configurable build mode
+
+### Build Modes
+
+The reusable workflow supports three different CodeQL build modes:
+
+#### Build Mode: "none" (Default, Recommended)
+- **When to use**: For compiled languages like Java and C# when source code analysis is sufficient
+- **Benefits**: Faster analysis, no build dependencies required
+- **Example**: 
+```yaml
+uses: ./.github/workflows/codeql-reusable.yml
+with:
+  build-mode: 'none'  # Default - no build needed
+```
+
+#### Build Mode: "autobuild"
+- **When to use**: When you want CodeQL to automatically detect and build your project
+- **Benefits**: Automatic build detection, good for most standard projects
+- **Example**:
+```yaml
+uses: ./.github/workflows/codeql-reusable.yml
+with:
+  build-mode: 'autobuild'  # Let CodeQL build automatically
+```
+
+#### Build Mode: "manual"
+- **When to use**: When you need specific build commands or custom build configurations
+- **Benefits**: Full control over the build process
+- **Example**:
+```yaml
+uses: ./.github/workflows/codeql-reusable.yml
+with:
+  build-mode: 'manual'
+  build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true'
+```
 
 ## 🚀 Usage
 

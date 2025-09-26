@@ -3,6 +3,12 @@ name: 'CodeQL Analysis - Reusable Workflow'
 # This is a reusable workflow that performs CodeQL analysis on Java code.
 # It accepts query pack suggestions as input parameters, allowing calling
 # workflows to specify additional security queries to run beyond the defaults.
+#
+# Key Features:
+# - Configurable build modes: "none" (default), "autobuild", or "manual"
+# - Custom query pack support
+# - Flexible build configuration
+# - Debug logging options
 
 on:
   workflow_call:
@@ -28,9 +34,16 @@ on:
         type: string
         default: 'security-extended'
       
-      # Build command override (optional)
+      # Build mode configuration
+      build-mode:
+        description: 'CodeQL build mode: "none" (no build needed - fastest, recommended for Java/C#), "autobuild" (automatic detection), or "manual" (requires build-command)'
+        required: false
+        type: string
+        default: 'none'
+      
+      # Build command (only used when build-mode is "manual")
       build-command:
-        description: 'Custom build command (if not provided, will use auto-build)'
+        description: 'Custom build command (only used when build-mode is "manual")'
         required: false
         type: string
         default: ''
@@ -85,27 +98,42 @@ jobs:
           queries: ${{ inputs.query-suite }}
           # Add query packs if specified
           packs: ${{ inputs.query-packs }}
+          # Set build mode based on input parameter
+          build-mode: ${{ inputs.build-mode }}
         env:
           # Increase memory for CodeQL analysis
           CODEQL_ACTION_EXTRA_OPTIONS: '{"database": {"interpret-results": {"max-paths": 4}}}'
 
-      # Step 4: Build the application
+      # Step 4: Build the application (only for manual build mode)
       - name: 'Build application'
+        if: inputs.build-mode == 'manual'
         run: |
           if [ -n "${{ inputs.build-command }}" ]; then
             echo "Using custom build command: ${{ inputs.build-command }}"
             ${{ inputs.build-command }}
           else
-            echo "Using auto-build for Java project"
+            echo "Manual build mode selected but no build command provided, attempting auto-detection"
             if [ -f "pom.xml" ]; then
-              echo "Detected Maven project"
+              echo "Detected Maven project - using default Maven build"
               mvn clean compile -DskipTests
             elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
-              echo "Detected Gradle project" 
+              echo "Detected Gradle project - using default Gradle build"
               ./gradlew build -x test
             else
-              echo "No recognized build file found, using CodeQL autobuild"
+              echo "No recognized build file found - cannot build in manual mode"
+              exit 1
             fi
+          fi
+
+      # Step 4b: Build note for other build modes
+      - name: 'Build mode information'
+        if: inputs.build-mode != 'manual'
+        run: |
+          if [ "${{ inputs.build-mode }}" == "none" ]; then
+            echo "Using build mode 'none' - CodeQL will analyze without building the project"
+            echo "This is recommended for compiled languages like Java and C# when source code analysis is sufficient"
+          elif [ "${{ inputs.build-mode }}" == "autobuild" ]; then
+            echo "Using build mode 'autobuild' - CodeQL will automatically detect and build the project"
           fi
 
       # Step 5: Perform CodeQL Analysis

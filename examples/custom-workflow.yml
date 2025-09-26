@@ -23,6 +23,8 @@ jobs:
       # Focus on critical security vulnerabilities
       query-packs: 'codeql/java-queries:cwe-089,codeql/java-queries:cwe-079,codeql/java-queries:cwe-078'
       java-version: '11'
+      # Use default build mode "none" for faster analysis
+      build-mode: 'none'
     secrets: inherit
 
   # Comprehensive analysis (scheduled and manual only)
@@ -36,6 +38,7 @@ jobs:
       # Include broader set of queries for comprehensive analysis
       query-packs: 'codeql/java-queries:security,codeql/java-queries:quality,codeql/java-queries:maintainability'
       java-version: '11'
-      # Use custom build for more thorough analysis
+      # Use manual build for more thorough analysis with custom build configuration
+      build-mode: 'manual'
       build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true -Dmaven.compiler.debuglevel=lines,vars,source'
     secrets: inherit

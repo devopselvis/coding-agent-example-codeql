@@ -77,8 +77,53 @@ query-packs: 'my-org/security-queries@1.2.0,codeql/java-queries:security'
 - Can target specific vulnerability types
 - Can include custom organizational packs
 
+## Build Modes
+
+CodeQL supports different build modes for compiled languages:
+
+### Build Mode: "none" (Recommended Default)
+```yaml
+uses: ./.github/workflows/codeql-reusable.yml
+with:
+  build-mode: 'none'
+```
+- **Best for**: Java, C#, and other compiled languages
+- **Performance**: Fastest analysis time
+- **Use case**: Source code analysis without compilation
+- **Dependencies**: No build tools required in the environment
+
+### Build Mode: "autobuild"
+```yaml
+uses: ./.github/workflows/codeql-reusable.yml
+with:
+  build-mode: 'autobuild'
+```
+- **Best for**: Standard projects with conventional build setups
+- **Performance**: Moderate analysis time
+- **Use case**: When CodeQL can automatically detect and build your project
+- **Dependencies**: Build tools must be available in the environment
+
+### Build Mode: "manual"
+```yaml
+uses: ./.github/workflows/codeql-reusable.yml
+with:
+  build-mode: 'manual'
+  build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true'
+```
+- **Best for**: Custom build configurations, complex projects
+- **Performance**: Variable (depends on build complexity)
+- **Use case**: When you need full control over the build process
+- **Dependencies**: All build dependencies must be configured
+
 ## Best Practices
 
+### Build Mode Selection
+1. **Start with "none"**: For Java/C# projects, begin with build mode "none"
+2. **Use "autobuild"**: If "none" doesn't provide sufficient analysis coverage
+3. **Choose "manual"**: Only when you need specific build configurations
+4. **Performance**: "none" > "autobuild" > "manual" in terms of speed
+
+### Query Pack Selection
 1. **Start Simple**: Begin with `security-extended` suite
 2. **Add Gradually**: Add specific query packs as needed  
 3. **Performance**: More queries = longer analysis time

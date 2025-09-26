@@ -1,0 +1,113 @@
+name: 'CodeQL Security Analysis'
+
+# This workflow demonstrates how to call the reusable CodeQL workflow
+# and pass custom query packs for enhanced security scanning.
+
+on:
+  # Trigger on pushes to main branch
+  push:
+    branches: [ "main", "develop" ]
+  
+  # Trigger on pull requests to main branch  
+  pull_request:
+    branches: [ "main" ]
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      custom-query-packs:
+        description: 'Additional query packs to run (comma-separated)'
+        required: false
+        default: ''
+      query-suite:
+        description: 'Query suite to use'
+        required: false
+        default: 'security-extended'
+        type: choice
+        options:
+          - 'default'
+          - 'security-extended' 
+          - 'security-and-quality'
+      build-mode:
+        description: 'Build mode to use'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - 'none'
+          - 'autobuild'
+          - 'manual'
+      custom-build-command:
+        description: 'Custom build command (only used with manual build mode)'
+        required: false
+        default: ''
+
+# Set permissions for the workflow
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # Job 1: Standard CodeQL analysis with build mode "none" (default)
+  standard-analysis:
+    name: 'Standard Security Analysis (Build Mode: None)'
+    uses: ./.github/workflows/codeql-reusable.yml
+    with:
+      language: 'java'
+      #query-suite: 'security-extended'
+      # Specify additional query packs for more comprehensive analysis
+      # These packs focus on specific vulnerability types
+      query-packs: 'codeql/java-queries@1.8.0'
+      #query-suite: 'security-and-quality'
+      java-version: '11'
+      # Use default build mode "none" - no explicit build needed
+      build-mode: 'none'
+    # Pass secrets if needed (none required for this demo)
+    secrets: inherit
+
+  # Job 2: Enhanced analysis with autobuild mode
+  #enhanced-analysis:
+  #  name: 'Enhanced Security Analysis (Build Mode: Autobuild)'
+  #  uses: ./.github/workflows/codeql-reusable.yml
+  #  with:
+  #    language: 'java'
+  #    # Specify additional query packs for more comprehensive analysis
+  #    # These packs focus on specific vulnerability types
+  #    query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089,codeql/java-queries:cwe-078'
+  #    query-suite: 'security-and-quality'
+  #    java-version: '11'
+  #    # Use autobuild mode - let CodeQL automatically build the project
+  #    build-mode: 'autobuild'
+  #  secrets: inherit
+
+  # Job 3: Manual build with custom build command
+  #manual-build-analysis:
+  #  name: 'Manual Build Analysis (Build Mode: Manual)'
+  #  uses: ./.github/workflows/codeql-reusable.yml
+  #  with:
+  #    language: 'java'
+  #    query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089'
+  #    query-suite: 'security-extended'
+  #    java-version: '11'
+  #    # Use manual build mode with custom build command
+  #    build-mode: 'manual'
+  #    build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true'
+  #  secrets: inherit
+
+  # Job 4: Manual trigger analysis (only runs on workflow_dispatch)
+  manual-analysis:
+    name: 'Manual Analysis with Custom Configuration'
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/codeql-reusable.yml
+    with:
+      language: 'java'
+      query-packs: ${{ github.event.inputs.custom-query-packs }}
+      query-suite: ${{ github.event.inputs.query-suite }}
+      java-version: '11'
+      # Use user-selected build mode
+      build-mode: ${{ github.event.inputs.build-mode }}
+      build-command: ${{ github.event.inputs.custom-build-command }}
+      # Enable debug logging for manual analysis to help with troubleshooting
+      debug-logging: true
+    secrets: inherit

@@ -1,0 +1,44 @@
+# Example: Custom workflow that calls the reusable CodeQL workflow
+# with organization-specific query packs and configurations
+
+name: 'Organization CodeQL Analysis'
+
+on:
+  push:
+    branches: [ "main", "develop", "release/*" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    # Run weekly security scans on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  # Standard security analysis for all code changes
+  security-scan:
+    name: 'Security Analysis'
+    uses: ./.github/workflows/codeql-reusable.yml
+    with:
+      language: 'java'
+      query-suite: 'security-extended'
+      # Focus on critical security vulnerabilities
+      query-packs: 'codeql/java-queries:cwe-089,codeql/java-queries:cwe-079,codeql/java-queries:cwe-078'
+      java-version: '11'
+      # Use default build mode "none" for faster analysis
+      build-mode: 'none'
+    secrets: inherit
+
+  # Comprehensive analysis (scheduled and manual only)
+  comprehensive-scan:
+    name: 'Comprehensive Analysis'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/codeql-reusable.yml
+    with:
+      language: 'java'
+      query-suite: 'security-and-quality'
+      # Include broader set of queries for comprehensive analysis
+      query-packs: 'codeql/java-queries:security,codeql/java-queries:quality,codeql/java-queries:maintainability'
+      java-version: '11'
+      # Use manual build for more thorough analysis with custom build configuration
+      build-mode: 'manual'
+      build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true -Dmaven.compiler.debuglevel=lines,vars,source'
+    secrets: inherit

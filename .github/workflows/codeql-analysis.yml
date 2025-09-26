@@ -1,0 +1,75 @@
+name: 'CodeQL Security Analysis'
+
+# This workflow demonstrates how to call the reusable CodeQL workflow
+# and pass custom query packs for enhanced security scanning.
+
+on:
+  # Trigger on pushes to main branch
+  push:
+    branches: [ "main", "develop" ]
+  
+  # Trigger on pull requests to main branch  
+  pull_request:
+    branches: [ "main" ]
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      custom-query-packs:
+        description: 'Additional query packs to run (comma-separated)'
+        required: false
+        default: ''
+      query-suite:
+        description: 'Query suite to use'
+        required: false
+        default: 'security-extended'
+        type: choice
+        options:
+          - 'default'
+          - 'security-extended' 
+          - 'security-and-quality'
+
+# Set permissions for the workflow
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # Job 1: Standard CodeQL analysis with default security queries
+  standard-analysis:
+    name: 'Standard Security Analysis'
+    uses: ./.github/workflows/codeql-reusable.yml
+    with:
+      language: 'java'
+      query-suite: 'security-extended'
+      java-version: '11'
+    # Pass secrets if needed (none required for this demo)
+    secrets: inherit
+
+  # Job 2: Enhanced analysis with additional query packs
+  enhanced-analysis:
+    name: 'Enhanced Security Analysis'
+    uses: ./.github/workflows/codeql-reusable.yml
+    with:
+      language: 'java'
+      # Specify additional query packs for more comprehensive analysis
+      # These packs focus on specific vulnerability types
+      query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089,codeql/java-queries:cwe-078'
+      query-suite: 'security-and-quality'
+      java-version: '11'
+      # Custom build command for more control
+      build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true'
+    secrets: inherit
+
+  # Job 3: Manual trigger analysis (only runs on workflow_dispatch)
+  manual-analysis:
+    name: 'Manual Analysis with Custom Packs'
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/codeql-reusable.yml
+    with:
+      language: 'java'
+      query-packs: ${{ github.event.inputs.custom-query-packs }}
+      query-suite: ${{ github.event.inputs.query-suite }}
+      java-version: '11'
+    secrets: inherit

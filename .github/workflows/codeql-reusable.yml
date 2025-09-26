@@ -1,0 +1,125 @@
+name: 'CodeQL Analysis - Reusable Workflow'
+
+# This is a reusable workflow that performs CodeQL analysis on Java code.
+# It accepts query pack suggestions as input parameters, allowing calling
+# workflows to specify additional security queries to run beyond the defaults.
+
+on:
+  workflow_call:
+    inputs:
+      # Language to analyze (default: java)
+      language:
+        description: 'Programming language to analyze'
+        required: false
+        type: string
+        default: 'java'
+      
+      # Query packs to use in addition to the default security queries
+      query-packs:
+        description: 'Comma-separated list of CodeQL query packs to use (e.g., "codeql/java-queries:cwe-079,codeql/java-queries:cwe-089")'
+        required: false
+        type: string
+        default: ''
+      
+      # Query suite to use (options: default, security-extended, security-and-quality)
+      query-suite:
+        description: 'CodeQL query suite to use'
+        required: false
+        type: string
+        default: 'security-extended'
+      
+      # Build command override (optional)
+      build-command:
+        description: 'Custom build command (if not provided, will use auto-build)'
+        required: false
+        type: string
+        default: ''
+      
+      # Java version to use
+      java-version:
+        description: 'Java version to use for build'
+        required: false
+        type: string
+        default: '11'
+
+jobs:
+  codeql-analysis:
+    name: 'CodeQL Analysis'
+    runs-on: ubuntu-latest
+    
+    # Required permissions for CodeQL analysis
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for better analysis
+          fetch-depth: 0
+
+      # Step 2: Set up Java environment
+      - name: 'Set up Java'
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # Step 3: Initialize CodeQL with specified configuration
+      - name: 'Initialize CodeQL'
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ inputs.language }}
+          # Use the specified query suite
+          queries: ${{ inputs.query-suite }}
+          # Add query packs if specified
+          packs: ${{ inputs.query-packs }}
+        env:
+          # Increase memory for CodeQL analysis
+          CODEQL_ACTION_EXTRA_OPTIONS: '{"database": {"interpret-results": {"max-paths": 4}}}'
+
+      # Step 4: Build the application
+      - name: 'Build application'
+        run: |
+          if [ -n "${{ inputs.build-command }}" ]; then
+            echo "Using custom build command: ${{ inputs.build-command }}"
+            ${{ inputs.build-command }}
+          else
+            echo "Using auto-build for Java project"
+            if [ -f "pom.xml" ]; then
+              echo "Detected Maven project"
+              mvn clean compile -DskipTests
+            elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
+              echo "Detected Gradle project" 
+              ./gradlew build -x test
+            else
+              echo "No recognized build file found, using CodeQL autobuild"
+            fi
+          fi
+
+      # Step 5: Perform CodeQL Analysis
+      - name: 'Perform CodeQL Analysis'
+        uses: github/codeql-action/analyze@v3
+        with:
+          # Upload results even if there are errors
+          upload: true
+          # Set analysis category for tracking
+          category: 'java-security-analysis'
+        env:
+          # Enable verbose logging for troubleshooting
+          CODEQL_ACTION_DEBUG: false
+
+      # Step 6: Upload analysis results as artifacts (optional)
+      - name: 'Upload CodeQL results'
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-results-${{ inputs.language }}
+          path: |
+            ${{ runner.temp }}/codeql_databases/
+            !${{ runner.temp }}/codeql_databases/**/*.zip
+          retention-days: 30

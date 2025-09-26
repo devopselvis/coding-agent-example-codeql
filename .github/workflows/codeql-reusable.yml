@@ -90,9 +90,9 @@ jobs:
           cache: 'maven'
 
       # Step 2.5 : Debugging
-      - name: Debugging
-        run: |
-          ls -al /opt/hostedtoolcache/CodeQL/2.23.1/x64/codeql/qlpacks/codeql/java-queries/1.8.0
+      #- name: Debugging
+      #  run: |
+      #    ls -al /opt/hostedtoolcache/CodeQL/2.23.1/x64/codeql/qlpacks/codeql/java-queries/1.8.0
 
       # Step 3: Initialize CodeQL with specified configuration
       - name: 'Initialize CodeQL'

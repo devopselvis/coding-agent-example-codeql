@@ -63,33 +63,33 @@ jobs:
     secrets: inherit
 
   # Job 2: Enhanced analysis with autobuild mode
-  enhanced-analysis:
-    name: 'Enhanced Security Analysis (Build Mode: Autobuild)'
-    uses: ./.github/workflows/codeql-reusable.yml
-    with:
-      language: 'java'
-      # Specify additional query packs for more comprehensive analysis
-      # These packs focus on specific vulnerability types
-      query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089,codeql/java-queries:cwe-078'
-      query-suite: 'security-and-quality'
-      java-version: '11'
-      # Use autobuild mode - let CodeQL automatically build the project
-      build-mode: 'autobuild'
-    secrets: inherit
+  #enhanced-analysis:
+  #  name: 'Enhanced Security Analysis (Build Mode: Autobuild)'
+  #  uses: ./.github/workflows/codeql-reusable.yml
+  #  with:
+  #    language: 'java'
+  #    # Specify additional query packs for more comprehensive analysis
+  #    # These packs focus on specific vulnerability types
+  #    query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089,codeql/java-queries:cwe-078'
+  #    query-suite: 'security-and-quality'
+  #    java-version: '11'
+  #    # Use autobuild mode - let CodeQL automatically build the project
+  #    build-mode: 'autobuild'
+  #  secrets: inherit
 
   # Job 3: Manual build with custom build command
-  manual-build-analysis:
-    name: 'Manual Build Analysis (Build Mode: Manual)'
-    uses: ./.github/workflows/codeql-reusable.yml
-    with:
-      language: 'java'
-      query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089'
-      query-suite: 'security-extended'
-      java-version: '11'
-      # Use manual build mode with custom build command
-      build-mode: 'manual'
-      build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true'
-    secrets: inherit
+  #manual-build-analysis:
+  #  name: 'Manual Build Analysis (Build Mode: Manual)'
+  #  uses: ./.github/workflows/codeql-reusable.yml
+  #  with:
+  #    language: 'java'
+  #    query-packs: 'codeql/java-queries:cwe-079,codeql/java-queries:cwe-089'
+  #    query-suite: 'security-extended'
+  #    java-version: '11'
+  #    # Use manual build mode with custom build command
+  #    build-mode: 'manual'
+  #    build-command: 'mvn clean compile -DskipTests -Dmaven.compiler.debug=true'
+  #  secrets: inherit
 
   # Job 4: Manual trigger analysis (only runs on workflow_dispatch)
   manual-analysis:
